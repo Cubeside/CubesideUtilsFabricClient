@@ -1,9 +1,12 @@
 package de.iani.cubesideutils.fabric;
 
+import de.iani.cubesideutils.fabric.commands.CommandRouter;
+import de.iani.cubesideutils.fabric.commands.CommandUtil;
 import de.iani.cubesideutils.fabric.packets.RankDataChannelHandler;
 import de.iani.cubesideutils.fabric.permission.PermissionHandler;
 import de.iani.cubesideutils.fabric.scheduler.Helper;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
