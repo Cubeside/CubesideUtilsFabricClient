@@ -4,13 +4,13 @@ import de.iani.cubesideutils.Pair;
 import de.iani.cubesideutils.StringUtilCore;
 import de.iani.cubesideutils.commands.AbstractCommandRouter;
 import de.iani.cubesideutils.commands.ArgsParser;
+import de.iani.cubesideutils.fabric.CubesideUtilsFabricClientMod;
 import de.iani.cubesideutils.fabric.commands.exceptions.DisallowsCommandBlockException;
 import de.iani.cubesideutils.fabric.commands.exceptions.IllegalSyntaxException;
 import de.iani.cubesideutils.fabric.commands.exceptions.InternalCommandException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionForPathException;
 import de.iani.cubesideutils.fabric.commands.exceptions.RequiresPlayerException;
-import de.iani.cubesideutils.fabric.permissions.PermissionUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+
+import de.iani.cubesideutils.fabric.permission.PermissionHandler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -244,7 +246,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
             return true;
         }
         for (String permission : permissions) {
-            if (PermissionUtil.hasPermission(sender, permission)) {
+            if (PermissionHandler.hasPermission(permission)) {
                 return true;
             }
         }

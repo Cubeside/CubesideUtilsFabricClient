@@ -1,25 +1,26 @@
 package de.iani.cubesideutils.fabric.location;
 
 import com.google.common.base.Preconditions;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+
 public class Location {
-    private Reference<ServerLevel> level;
+    private Reference<ClientWorld> level;
     private double x;
     private double y;
     private double z;
     private float pitch;
     private float yaw;
 
-    public Location(@Nullable final ServerLevel level, final double x, final double y, final double z) {
+    public Location(@Nullable final ClientWorld level, final double x, final double y, final double z) {
         this(level, x, y, z, 0, 0);
     }
 
-    public Location(@Nullable final ServerLevel level, final double x, final double y, final double z, final float yaw, final float pitch) {
+    public Location(@Nullable final ClientWorld level, final double x, final double y, final double z, final float yaw, final float pitch) {
         if (level != null) {
             this.level = new WeakReference<>(level);
         }
@@ -31,12 +32,12 @@ public class Location {
         this.yaw = yaw;
     }
 
-    public ServerLevel getWorld() {
+    public ClientWorld getWorld() {
         if (this.level == null) {
             return null;
         }
 
-        ServerLevel world = this.level.get();
+        ClientWorld world = this.level.get();
         Preconditions.checkArgument(world != null, "level unloaded");
         return world;
     }

@@ -13,7 +13,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import de.iani.cubesideutils.fabric.CubesideUtilsFabricMod;
+import de.iani.cubesideutils.fabric.CubesideUtilsFabricClientMod;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +75,7 @@ public class CommandUtil {
             try {
                 return handler.onCommand(context.getSource(), label, args);
             } catch (Throwable ex) {
-                CubesideUtilsFabricMod.LOGGER.error("Unhandled exception in command", ex);
+                CubesideUtilsFabricClientMod.LOGGER.error("Unhandled exception in command", ex);
             }
             return 0;
         }
@@ -96,7 +96,7 @@ public class CommandUtil {
                     results = handler.onTabComplete(context.getSource(), label, args);
                 }
             } catch (Throwable ex) {
-                CubesideUtilsFabricMod.LOGGER.error("Unhandled exception in tab complete", ex);
+                CubesideUtilsFabricClientMod.LOGGER.error("Unhandled exception in tab complete", ex);
             }
             builder = builder.createOffset(builder.getInput().lastIndexOf(' ') + 1);
             if (results != null) {

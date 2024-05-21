@@ -1,14 +1,14 @@
 package de.iani.cubesideutils.fabric.scheduler;
 
-import de.iani.cubesideutils.fabric.CubesideUtilsFabricMod;
-import net.minecraft.server.MinecraftServer;
+import de.iani.cubesideutils.fabric.CubesideUtilsFabricClientMod;
+import net.minecraft.client.MinecraftClient;
 
 public class Helper {
-    public static void initialize(CubesideUtilsFabricMod mod, MinecraftServer server) {
-        Scheduler.INSTANCE.initialize(server.getRunningThread());
+    public static void initialize(CubesideUtilsFabricClientMod mod, MinecraftClient client) {
+        Scheduler.INSTANCE.initialize(client.getThread());
     }
 
-    public static void processOnTick(CubesideUtilsFabricMod mod) {
+    public static void processOnTick(CubesideUtilsFabricClientMod mod) {
         Scheduler.INSTANCE.processOnTick();
     }
 }
