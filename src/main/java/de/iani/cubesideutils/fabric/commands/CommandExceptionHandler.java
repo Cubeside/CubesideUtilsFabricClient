@@ -1,47 +1,35 @@
 package de.iani.cubesideutils.fabric.commands;
 
-import de.iani.cubesideutils.fabric.commands.exceptions.DisallowsCommandBlockException;
 import de.iani.cubesideutils.fabric.commands.exceptions.IllegalSyntaxException;
 import de.iani.cubesideutils.fabric.commands.exceptions.InternalCommandException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionForPathException;
-import de.iani.cubesideutils.fabric.commands.exceptions.RequiresPlayerException;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.Text;
+
+import java.awt.*;
 
 public interface CommandExceptionHandler {
 
     public static final CommandExceptionHandler DEFAULT_HANDLER = new CommandExceptionHandler() {
     };
 
-    public default int handleDisallowsCommandBlock(DisallowsCommandBlockException thrown) {
-        CommandSourceStack sender = thrown.getSender();
-        sender.sendChatMessage(null, false, null);
-        sender.sendFailure(Component.literal(getErrorMessagePrefix() + thrown.getMessage()));
-        return 0;
-    }
-
-    public default int handleRequiresPlayer(RequiresPlayerException thrown) {
-        CommandSourceStack sender = thrown.getSender();
-        sender.sendFailure(Component.literal(getErrorMessagePrefix() + thrown.getMessage()));
-        return 0;
-    }
-
     public default int handleNoPermission(NoPermissionException thrown) {
-        CommandSourceStack sender = thrown.getSender();
-        sender.sendFailure(Component.literal(getErrorMessagePrefix() + thrown.getMessage()));
+        ClientPlayerEntity sender = thrown.getSender().getPlayer();
+        sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()));
         return 0;
     }
 
     public default int handleNoPermissionForPath(NoPermissionForPathException thrown) {
-        CommandSourceStack sender = thrown.getSender();
-        sender.sendFailure(Component.literal(getErrorMessagePrefix() + thrown.getMessage()));
+        ClientPlayerEntity sender = thrown.getSender().getPlayer();
+        sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()));
         return 0;
     }
 
     public default int handleIllegalSyntax(IllegalSyntaxException thrown) {
         CommandRouter router = thrown.getRouter();
-        CommandSourceStack sender = thrown.getSender();
+        FabricClientCommandSource sender = thrown.getSender();
         String alias = thrown.getAlias();
         String[] args = thrown.getArgs();
         router.showHelp(sender, alias, args);
@@ -50,8 +38,8 @@ public interface CommandExceptionHandler {
 
     public default int handleInternalException(InternalCommandException thrown) {
         if (thrown.getMessage() != null) {
-            CommandSourceStack sender = thrown.getSender();
-            sender.sendFailure(Component.literal(getErrorMessagePrefix() + thrown.getMessage()));
+            ClientPlayerEntity sender = thrown.getSender().getPlayer();
+            sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()));
         }
 
         Throwable cause = thrown.getCause();

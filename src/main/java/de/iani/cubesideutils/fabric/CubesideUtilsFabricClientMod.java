@@ -17,7 +17,6 @@ public class CubesideUtilsFabricClientMod implements ClientModInitializer {
     public static final String MODID = "cubesideutilsfabricclient";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
-    private static String rank;
 
     public CubesideUtilsFabricClientMod() {
         LOGGER.info("Registering MySQL driver");

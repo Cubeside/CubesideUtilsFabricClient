@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
+
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import org.apache.commons.lang3.StringUtils;
 
 public class CommandUtil {
@@ -30,14 +30,14 @@ public class CommandUtil {
         // prevents instances
     }
 
-    public static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher, String command, CommandHandler handler) {
+    public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher, String command, CommandHandler handler) {
         Preconditions.checkNotNull(command, "dispatcher");
         Preconditions.checkNotNull(command, "command");
         Preconditions.checkNotNull(handler, "handler");
 
         CommandAdapter adapter = new CommandAdapter(handler);
-        LiteralCommandNode<CommandSourceStack> commandNode = Commands.literal(command).requires(adapter).executes(adapter).build();
-        ArgumentCommandNode<CommandSourceStack, String> defaultArgs = RequiredArgumentBuilder.<CommandSourceStack, String> argument("args", StringArgumentType.greedyString()).suggests(adapter).executes(adapter).build();
+        LiteralCommandNode<FabricClientCommandSource> commandNode = Commands.literal(command).requires(adapter).executes(adapter).build();
+        ArgumentCommandNode<FabricClientCommandSource, String> defaultArgs = RequiredArgumentBuilder.<FabricClientCommandSource, String> argument("args", StringArgumentType.greedyString()).suggests(adapter).executes(adapter).build();
         Field childrenField = CommandNode.class.getDeclaredFields().clone()[0]; // Map<String, CommandNode<S>> children
         try {
             childrenField.setAccessible(true);
@@ -51,7 +51,7 @@ public class CommandUtil {
         dispatcher.getRoot().addChild(commandNode);
     }
 
-    public static class CommandAdapter implements Predicate<CommandSourceStack>, Command<CommandSourceStack>, SuggestionProvider<CommandSourceStack> {
+    public static class CommandAdapter implements Predicate<FabricClientCommandSource>, Command<FabricClientCommandSource>, SuggestionProvider<FabricClientCommandSource> {
         private final CommandHandler handler;
 
         public CommandAdapter(CommandHandler handler) {
@@ -59,12 +59,12 @@ public class CommandUtil {
         }
 
         @Override
-        public boolean test(CommandSourceStack source) {
+        public boolean test(FabricClientCommandSource source) {
             return handler.checkPermission(source);
         }
 
         @Override
-        public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        public int run(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
             String commandLine = context.getRange().get(context.getInput());
             String[] args = StringUtils.split(commandLine, ' ');
             if (args.length == 0) {
@@ -81,7 +81,7 @@ public class CommandUtil {
         }
 
         @Override
-        public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+        public CompletableFuture<Suggestions> getSuggestions(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
             String commandLine = builder.getInput();
             String[] args = StringUtils.split(commandLine, ' ');
             if (commandLine.endsWith(" ")) {

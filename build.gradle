@@ -1,36 +1,26 @@
 plugins {
 	id 'fabric-loom' version '1.6-SNAPSHOT'
 	id 'maven-publish'
-	id 'com.github.johnrengelman.shadow' version '7.1.2'
+	id "com.github.johnrengelman.shadow" version "8.1.1"
 }
+
+apply plugin: 'java'
+apply plugin: 'fabric-loom'
+apply plugin: 'maven-publish'
+apply plugin: "com.github.johnrengelman.shadow"
+
+defaultTasks('clean', 'build', 'publishToMavenLocal')
 
 version = project.mod_version
 group = project.maven_group
 
-base {
-	archivesName = project.archives_base_name
-}
-
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
 	mavenLocal()
 }
 
-loom {
-    splitEnvironmentSourceSets()
-
-	mods {
-		"cubesideutils-fabric" {
-			sourceSet sourceSets.main
-			sourceSet sourceSets.client
-		}
-	}
-
-    accessWidenerPath = file("src/main/resources/cubesideutils.accesswidener")
+configurations {
+	shade
+	compileClasspath.extendsFrom shade
 }
 
 dependencies {
@@ -41,8 +31,8 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	
-	// Uncomment the following line to enable the deprecated Fabric API modules. 
+
+	// Uncomment the following line to enable the deprecated Fabric API modules.
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
@@ -58,7 +48,12 @@ processResources {
 	}
 }
 
-tasks.withType(JavaCompile).configureEach {
+loom {
+    accessWidenerPath = file("src/main/resources/cubesideutils.accesswidener")
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
 	it.options.release = 21
 }
 
@@ -90,7 +85,6 @@ shadowJar {
     
     relocate 'com.mysql', 'de.iani.cubesideutils.fabric.libs.mysql'
 }
-
 
 remapJar {
     dependsOn(shadowJar)

@@ -1,16 +1,16 @@
 package de.iani.cubesideutils.fabric.commands;
 
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
 import de.iani.cubesideutils.Pair;
 import de.iani.cubesideutils.StringUtilCore;
 import de.iani.cubesideutils.commands.AbstractCommandRouter;
 import de.iani.cubesideutils.commands.ArgsParser;
-import de.iani.cubesideutils.fabric.CubesideUtilsFabricClientMod;
-import de.iani.cubesideutils.fabric.commands.exceptions.DisallowsCommandBlockException;
 import de.iani.cubesideutils.fabric.commands.exceptions.IllegalSyntaxException;
 import de.iani.cubesideutils.fabric.commands.exceptions.InternalCommandException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionForPathException;
-import de.iani.cubesideutils.fabric.commands.exceptions.RequiresPlayerException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,13 +20,14 @@ import java.util.Objects;
 import java.util.Set;
 
 import de.iani.cubesideutils.fabric.permission.PermissionHandler;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BaseCommandBlock;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.scoreboard.Team;
+import net.minecraft.text.Text;
+import net.minecraft.world.GameMode;
 
-public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSourceStack> implements CommandHandler {
+public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClientCommandSource> implements CommandHandler {
 
     public static final String UNKNOWN_COMMAND_MESSAGE = "Unknown command. Type \"/help\" for help.";
 
@@ -56,7 +57,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
     }
 
     @Override
-    public List<String> onTabComplete(CommandSourceStack sender, String alias, String[] args) {
+    public List<String> onTabComplete(FabricClientCommandSource sender, String alias, String[] args) {
         Pair<CommandMap, Integer> commandMapAndArg = matchCommandMap(sender, args, 1);
         CommandMap currentMap = commandMapAndArg.first;
         int nr = commandMapAndArg.second;
@@ -80,7 +81,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
                 if (StringUtilCore.startsWithIgnoreCase(key, partial)) {
                     CommandMap subcmd = e.getValue();
                     if (isAnySubCommandDisplayable(sender, subcmd)) {
-                        if (sender.source instanceof Player || subcmd.executor == null || !subcmd.executor.requiresPlayer()) {
+                        if (subcmd.executor == null) {
                             if (optionsList == null) {
                                 optionsList = options == null ? new ArrayList<>() : new ArrayList<>(options);
                                 options = optionsList;
@@ -93,8 +94,10 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
         }
         if (options == null) {
             options = new ArrayList<>();
-            for (ServerPlayer player : sender.getServer().getPlayerList().getPlayers()) {
-                options.add(player.getName().getString());
+            ClientPlayNetworkHandler clientPlayNetworkHandler = sender.getClient().getNetworkHandler();
+            List<PlayerListEntry> list = ENTRY_ORDERING.sortedCopy(clientPlayNetworkHandler.getListedPlayerListEntries());
+            for (PlayerListEntry playerListEntry : list) {
+                options.add(playerListEntry.getProfile().getName());
             }
         }
 
@@ -104,7 +107,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
     }
 
     @Override
-    public int onCommand(CommandSourceStack sender, String alias, String[] args) {
+    public int onCommand(FabricClientCommandSource sender, String alias, String[] args) {
         Pair<CommandMap, Integer> commandMapAndArg = matchCommandMap(sender, args);
         CommandMap currentMap = commandMapAndArg.first;
         int nr = commandMapAndArg.second;
@@ -113,12 +116,6 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
         SubCommand toExecute = currentMap.executor;
         if (toExecute != null) {
             try {
-                if (!toExecute.allowsCommandBlock() && (sender.source instanceof BaseCommandBlock)) {
-                    throw new DisallowsCommandBlockException(this, sender, alias, toExecute, args);
-                }
-                if (toExecute.requiresPlayer() && !(sender.source instanceof Player)) {
-                    throw new RequiresPlayerException(this, sender, alias, toExecute, args);
-                }
                 if (!toExecute.hasRequiredPermission(sender) || !toExecute.isAvailable(sender)) {
                     throw new NoPermissionException(this, sender, alias, toExecute, args, toExecute.getRequiredPermission());
                 }
@@ -128,10 +125,6 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
                 } else {
                     throw new IllegalSyntaxException(this, sender, alias, toExecute, args);
                 }
-            } catch (DisallowsCommandBlockException e) {
-                return exceptionHandler.handleDisallowsCommandBlock(e);
-            } catch (RequiresPlayerException e) {
-                return exceptionHandler.handleRequiresPlayer(e);
             } catch (NoPermissionException e) {
                 return exceptionHandler.handleNoPermission(e);
             } catch (IllegalSyntaxException e) {
@@ -166,13 +159,13 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
         return prefixBuilder.toString();
     }
 
-    public void showHelp(CommandSourceStack sender, String alias, String[] args) {
+    public void showHelp(FabricClientCommandSource sender, String alias, String[] args) {
         Pair<CommandMap, Integer> commandMapAndArg = matchCommandMap(sender, args);
         CommandMap currentMap = commandMapAndArg.first;
         showHelp(sender, alias, currentMap);
     }
 
-    private void showHelp(CommandSourceStack sender, String alias, CommandMap currentMap) {
+    private void showHelp(FabricClientCommandSource sender, String alias, CommandMap currentMap) {
         if (currentMap.subCommands != null) {
             String prefix = getCommandString(alias, currentMap);
             for (CommandMap subcmd : currentMap.subcommandsOrdered) {
@@ -180,13 +173,11 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
                 if (subcmd.executor == null) {
                     // hat weitere subcommands
                     if (isAnySubCommandDisplayable(sender, subcmd)) {
-                        sender.sendSystemMessage(Component.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " ..."));
+                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " ..."));
                     }
                 } else {
                     if (subcmd.executor.hasRequiredPermission(sender) && subcmd.executor.isAvailable(sender)) {
-                        if (sender.source instanceof Player || !subcmd.executor.requiresPlayer()) {
-                            sender.sendSystemMessage(Component.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " " + subcmd.executor.getUsage(sender)));
-                        }
+                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " " + subcmd.executor.getUsage(sender)));
                     }
                 }
             }
@@ -195,14 +186,12 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
             SubCommand executor = currentMap.executor;
             if (executor.hasRequiredPermission(sender) && executor.isAvailable(sender)) {
                 String prefix = getCommandString(alias, currentMap);
-                if (sender.source instanceof Player || !executor.requiresPlayer()) {
-                    sender.sendSystemMessage(Component.literal(exceptionHandler.getHelpMessagePrefix() + prefix + executor.getUsage(sender)));
-                }
+                sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + executor.getUsage(sender)));
             }
         }
     }
 
-    private boolean isAnySubCommandExecutable(CommandSourceStack sender, CommandMap cmd) {
+    private boolean isAnySubCommandExecutable(FabricClientCommandSource sender, CommandMap cmd) {
         if (cmd.executor != null && cmd.executor.isExecutable(sender)) {
             return true;
         }
@@ -220,7 +209,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
         return false;
     }
 
-    private boolean isAnySubCommandDisplayable(CommandSourceStack sender, CommandMap cmd) {
+    private boolean isAnySubCommandDisplayable(FabricClientCommandSource sender, CommandMap cmd) {
         if (cmd.executor != null && cmd.executor.isDisplayable(sender)) {
             return true;
         }
@@ -238,11 +227,8 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
         return false;
     }
 
-    private boolean hasAnyPermission(CommandSourceStack sender, Set<String> permissions) {
+    private boolean hasAnyPermission(FabricClientCommandSource sender, Set<String> permissions) {
         if (permissions == null || permissions.isEmpty()) {
-            return true;
-        }
-        if (!(sender.source instanceof ServerPlayer player)) {
             return true;
         }
         for (String permission : permissions) {
@@ -254,9 +240,15 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, CommandSour
     }
 
     @Override
-    public boolean checkPermission(CommandSourceStack sender) {
+    public boolean checkPermission(FabricClientCommandSource sender) {
         Pair<CommandMap, Integer> commandMapAndArg = matchCommandMap(sender, new String[0], 1);
         CommandMap currentMap = commandMapAndArg.first;
         return isAnySubCommandExecutable(sender, currentMap);
     }
+
+    private static final Ordering<PlayerListEntry> ENTRY_ORDERING = Ordering.from((playerListEntry, playerListEntry2) -> {
+        Team team = playerListEntry.getScoreboardTeam();
+        Team team2 = playerListEntry2.getScoreboardTeam();
+        return ComparisonChain.start().compareTrueFirst(playerListEntry.getGameMode() != GameMode.SPECTATOR, playerListEntry2.getGameMode() != GameMode.SPECTATOR).compare(team != null ? team.getName() : "", team2 != null ? team2.getName() : "").compare(playerListEntry.getProfile().getName(), playerListEntry2.getProfile().getName(), String::compareToIgnoreCase).result();
+    });
 }

@@ -2,38 +2,39 @@ package de.iani.cubesideutils.fabric.commands.exceptions;
 
 import de.iani.cubesideutils.fabric.commands.CommandRouter;
 import java.util.Objects;
-import net.minecraft.commands.CommandSourceStack;
+
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
 public abstract class CommandRouterException extends Exception {
 
     private static final long serialVersionUID = 3550234682652991485L;
 
     private CommandRouter router;
-    private CommandSourceStack sender;
+    private FabricClientCommandSource sender;
     private String alias;
     private String[] args;
 
-    public CommandRouterException(CommandRouter router, CommandSourceStack sender, String alias, String[] args, String message, Throwable cause) {
+    public CommandRouterException(CommandRouter router, FabricClientCommandSource sender, String alias, String[] args, String message, Throwable cause) {
         super(message, cause);
         init(router, sender, alias, args);
     }
 
-    public CommandRouterException(CommandRouter router, CommandSourceStack sender, String alias, String[] args, String message) {
+    public CommandRouterException(CommandRouter router, FabricClientCommandSource sender, String alias, String[] args, String message) {
         super(message);
         init(router, sender, alias, args);
     }
 
-    public CommandRouterException(CommandRouter router, CommandSourceStack sender, String alias, String[] args, Throwable cause) {
+    public CommandRouterException(CommandRouter router, FabricClientCommandSource sender, String alias, String[] args, Throwable cause) {
         super(cause);
         init(router, sender, alias, args);
     }
 
-    public CommandRouterException(CommandRouter router, CommandSourceStack sender, String alias, String[] args) {
+    public CommandRouterException(CommandRouter router, FabricClientCommandSource sender, String alias, String[] args) {
         super();
         init(router, sender, alias, args);
     }
 
-    private void init(CommandRouter router, CommandSourceStack sender, String alias, String[] args) {
+    private void init(CommandRouter router, FabricClientCommandSource sender, String alias, String[] args) {
         this.router = router;
         this.sender = Objects.requireNonNull(sender);
         this.alias = Objects.requireNonNull(alias);
@@ -44,7 +45,7 @@ public abstract class CommandRouterException extends Exception {
         return router;
     }
 
-    public CommandSourceStack getSender() {
+    public FabricClientCommandSource getSender() {
         return sender;
     }
 
