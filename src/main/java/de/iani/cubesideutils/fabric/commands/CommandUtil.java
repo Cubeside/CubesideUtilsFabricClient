@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -20,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,7 +36,7 @@ public class CommandUtil {
         Preconditions.checkNotNull(handler, "handler");
 
         CommandAdapter adapter = new CommandAdapter(handler);
-        LiteralCommandNode<FabricClientCommandSource> commandNode = Commands.literal(command).requires(adapter).executes(adapter).build();
+        LiteralCommandNode<FabricClientCommandSource> commandNode = LiteralArgumentBuilder.<FabricClientCommandSource> literal(command).requires(adapter).executes(adapter).build();
         ArgumentCommandNode<FabricClientCommandSource, String> defaultArgs = RequiredArgumentBuilder.<FabricClientCommandSource, String> argument("args", StringArgumentType.greedyString()).suggests(adapter).executes(adapter).build();
         Field childrenField = CommandNode.class.getDeclaredFields().clone()[0]; // Map<String, CommandNode<S>> children
         try {
