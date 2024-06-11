@@ -41,7 +41,7 @@ public class CubesideUtilsFabricClientMod implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> PermissionHandler.setRank(null));
     }
     public void onClientStarting(MinecraftClient client) {
-        Helper.initialize(this, client);
+        Helper.initialize(client);
     }
 
     public void onClientTick(MinecraftClient client) {

@@ -4,7 +4,7 @@ import de.iani.cubesideutils.fabric.CubesideUtilsFabricClientMod;
 import net.minecraft.client.MinecraftClient;
 
 public class Helper {
-    public static void initialize(CubesideUtilsFabricClientMod mod, MinecraftClient client) {
+    public static void initialize(MinecraftClient client) {
         Scheduler.INSTANCE.initialize(client.getThread());
     }
 
