@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import java.nio.charset.StandardCharsets;
 
 public record RankInfoS2C(String rank) implements CustomPayload {
-    public static final Id<RankInfoS2C> PACKET_ID = new Id<>(new Identifier("cubesideutilsfabricclient", "rank"));
+    public static final Id<RankInfoS2C> PACKET_ID = new Id<>(Identifier.of("cubesideutilsfabricclient", "rank"));
     public static final PacketCodec<PacketByteBuf, RankInfoS2C> PACKET_CODEC = PacketCodec.of(RankInfoS2C::write, RankInfoS2C::new);
 
     public RankInfoS2C(PacketByteBuf buf) {
