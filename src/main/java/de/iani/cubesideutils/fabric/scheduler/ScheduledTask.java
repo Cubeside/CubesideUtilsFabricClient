@@ -1,16 +1,20 @@
 package de.iani.cubesideutils.fabric.scheduler;
 
+import java.util.concurrent.Executor;
+
 public class ScheduledTask implements Comparable<ScheduledTask> {
     private Runnable task;
     private volatile boolean cancelled;
     private long nextExecutionTick;
     private int delay;
     private int intervall;
+    private Executor executor;
 
-    public ScheduledTask(Runnable task, int delay, int intervall) {
+    public ScheduledTask(Runnable task, int delay, int intervall, Executor executor) {
         this.task = task;
         this.delay = delay;
         this.intervall = intervall;
+        this.executor = executor;
     }
 
     public void cancel() {
@@ -25,10 +29,14 @@ public class ScheduledTask implements Comparable<ScheduledTask> {
     void execute() {
         Runnable task = this.task;
         if (!isCancelled() && task != null) {
-            try {
-                task.run();
-            } catch (Throwable t) {
-                t.printStackTrace();
+            if (executor != null) {
+                executor.execute(task);
+            } else {
+                try {
+                    task.run();
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
         }
     }

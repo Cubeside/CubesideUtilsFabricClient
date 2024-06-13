@@ -4,6 +4,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class Scheduler {
     private Thread ownerThread;
@@ -12,6 +14,7 @@ public class Scheduler {
     private ArrayDeque<ScheduledTask> immediateTasks;
     private ArrayList<ScheduledTask> everyTickTasks;
     private long currentTick;
+    private final Executor defaultExecutor = Executors.newCachedThreadPool();
 
     static final Scheduler INSTANCE = new Scheduler();
 
@@ -23,33 +26,49 @@ public class Scheduler {
     }
 
     public static ScheduledTask scheduleSyncRepeatingTask(Runnable task, int delay, int inverval) {
-        return INSTANCE.scheduleSyncRepeatingTaskInternal(task, delay, inverval);
+        return INSTANCE.scheduleTaskInternal(task, delay, inverval, null);
     }
 
-    private ScheduledTask scheduleSyncRepeatingTaskInternal(Runnable task, int delay, int inverval) {
+    public static ScheduledTask scheduleSyncTask(Runnable task, int delay) {
+        return INSTANCE.scheduleTaskInternal(task, delay, -1, null);
+    }
+
+    public static ScheduledTask scheduleImmediateSyncTask(Runnable task) {
+        return INSTANCE.scheduleTaskInternal(task, 0, -1, null);
+    }
+
+    public static ScheduledTask scheduleImmediateAsynchronousTask(Runnable task) {
+        return INSTANCE.scheduleTaskInternal(task, 0, -1, INSTANCE.defaultExecutor);
+    }
+
+    public static ScheduledTask scheduleAsynchronousTask(Runnable task, int delay) {
+        return INSTANCE.scheduleTaskInternal(task, delay, -1, INSTANCE.defaultExecutor);
+    }
+
+    public static ScheduledTask scheduleAsynchronousRepeatingTask(Runnable task, int delay, int interval) {
+        return INSTANCE.scheduleTaskInternal(task, delay, interval, INSTANCE.defaultExecutor);
+    }
+
+    public static ScheduledTask scheduleImmediateAsynchronousTask(Runnable task, Executor executor) {
+        return INSTANCE.scheduleTaskInternal(task, 0, -1, executor == null ? INSTANCE.defaultExecutor : executor);
+    }
+
+    public static ScheduledTask scheduleAsynchronousTask(Runnable task, int delay, Executor executor) {
+        return INSTANCE.scheduleTaskInternal(task, delay, -1, executor == null ? INSTANCE.defaultExecutor : executor);
+    }
+
+    public static ScheduledTask scheduleAsynchronousRepeatingTask(Runnable task, int delay, int interval, Executor executor) {
+        return INSTANCE.scheduleTaskInternal(task, delay, interval, executor == null ? INSTANCE.defaultExecutor : executor);
+    }
+
+    private ScheduledTask scheduleTaskInternal(Runnable task, int delay, int inverval, Executor executor) {
         if (inverval < 1) {
             inverval = -1;
         }
         if (delay < 0) {
             delay = 0;
         }
-        return schedule(new ScheduledTask(task, delay, inverval));
-    }
-
-    public static ScheduledTask scheduleSyncTask(Runnable task, int delay) {
-        return INSTANCE.scheduleSyncTaskInternal(task, delay);
-    }
-
-    private ScheduledTask scheduleSyncTaskInternal(Runnable task, int delay) {
-        return scheduleSyncRepeatingTask(task, delay, -1);
-    }
-
-    public static ScheduledTask scheduleImmediateSyncTask(Runnable task) {
-        return INSTANCE.scheduleImmediateSyncTaskInternal(task);
-    }
-
-    private ScheduledTask scheduleImmediateSyncTaskInternal(Runnable task) {
-        return scheduleSyncRepeatingTask(task, 0, -1);
+        return schedule(new ScheduledTask(task, delay, inverval, executor));
     }
 
     private ScheduledTask schedule(ScheduledTask scheduledTask) {
