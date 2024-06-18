@@ -8,6 +8,7 @@
         "Brokkonaut",
         "fantahund"
     ],
+    "icon": "icon.png",
     "contact": {
         "homepage": "https://cubeside.de/"
     },
@@ -23,7 +24,7 @@
     "accessWidener" : "cubesideutils.accesswidener",
     "depends": {
         "fabricloader": ">=0.15.11",
-        "minecraft": "~1.21-rc.1",
+        "minecraft": "~1.21",
         "java": ">=21",
         "fabric-api": "*"
     }
