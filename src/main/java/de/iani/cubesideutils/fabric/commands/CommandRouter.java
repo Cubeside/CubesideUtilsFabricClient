@@ -173,11 +173,11 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
                 if (subcmd.executor == null) {
                     // hat weitere subcommands
                     if (isAnySubCommandDisplayable(sender, subcmd)) {
-                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " ..."));
+                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " ..."), false);
                     }
                 } else {
                     if (subcmd.executor.hasRequiredPermission(sender) && subcmd.executor.isAvailable(sender)) {
-                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " " + subcmd.executor.getUsage(sender)));
+                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " " + subcmd.executor.getUsage(sender)), false);
                     }
                 }
             }
@@ -186,7 +186,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
             SubCommand executor = currentMap.executor;
             if (executor.hasRequiredPermission(sender) && executor.isAvailable(sender)) {
                 String prefix = getCommandString(alias, currentMap);
-                sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + executor.getUsage(sender)));
+                sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + executor.getUsage(sender)), false);
             }
         }
     }

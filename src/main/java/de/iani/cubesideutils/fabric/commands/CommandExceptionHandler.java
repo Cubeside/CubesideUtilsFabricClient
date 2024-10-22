@@ -17,13 +17,13 @@ public interface CommandExceptionHandler {
 
     public default int handleNoPermission(NoPermissionException thrown) {
         ClientPlayerEntity sender = thrown.getSender().getPlayer();
-        sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()));
+        sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()), false);
         return 0;
     }
 
     public default int handleNoPermissionForPath(NoPermissionForPathException thrown) {
         ClientPlayerEntity sender = thrown.getSender().getPlayer();
-        sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()));
+        sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()), false);
         return 0;
     }
 
@@ -39,7 +39,7 @@ public interface CommandExceptionHandler {
     public default int handleInternalException(InternalCommandException thrown) {
         if (thrown.getMessage() != null) {
             ClientPlayerEntity sender = thrown.getSender().getPlayer();
-            sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()));
+            sender.sendMessage(Text.literal(getErrorMessagePrefix() + thrown.getMessage()).withColor(Color.RED.getRGB()), false);
         }
 
         Throwable cause = thrown.getCause();
