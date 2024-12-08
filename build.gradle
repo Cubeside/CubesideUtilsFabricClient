@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.8-SNAPSHOT'
+	id 'fabric-loom' version '1.9-SNAPSHOT'
 	id 'maven-publish'
 	id "com.github.johnrengelman.shadow" version "8.1.1"
 }
@@ -52,7 +52,7 @@ loom {
     accessWidenerPath = file("src/main/resources/cubesideutils.accesswidener")
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
 	options.encoding = "UTF-8"
 	it.options.release = 21
 }
