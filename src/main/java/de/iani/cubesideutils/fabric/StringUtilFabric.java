@@ -1,5 +1,6 @@
 package de.iani.cubesideutils.fabric;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,7 +78,7 @@ public class StringUtilFabric {
                             builder.delete(0, builder.length());
                         }
                         String url = text.substring(i, nextSpace);
-                        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL, url.startsWith("http") ? url : "http://" + url);
+                        ClickEvent clickEvent = new ClickEvent.OpenUrl(url.startsWith("http") ? URI.create(url) : URI.create("http://" + url));
                         components.add(Text.literal(url).setStyle(style.withClickEvent(clickEvent)));
                         i = nextSpace - 1;
                         continue;
