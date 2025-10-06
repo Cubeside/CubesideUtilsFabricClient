@@ -97,7 +97,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
             ClientPlayNetworkHandler clientPlayNetworkHandler = sender.getClient().getNetworkHandler();
             List<PlayerListEntry> list = ENTRY_ORDERING.sortedCopy(clientPlayNetworkHandler.getListedPlayerListEntries());
             for (PlayerListEntry playerListEntry : list) {
-                options.add(playerListEntry.getProfile().getName());
+                options.add(playerListEntry.getProfile().name());
             }
         }
 
@@ -249,6 +249,6 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
     private static final Ordering<PlayerListEntry> ENTRY_ORDERING = Ordering.from((playerListEntry, playerListEntry2) -> {
         Team team = playerListEntry.getScoreboardTeam();
         Team team2 = playerListEntry2.getScoreboardTeam();
-        return ComparisonChain.start().compareTrueFirst(playerListEntry.getGameMode() != GameMode.SPECTATOR, playerListEntry2.getGameMode() != GameMode.SPECTATOR).compare(team != null ? team.getName() : "", team2 != null ? team2.getName() : "").compare(playerListEntry.getProfile().getName(), playerListEntry2.getProfile().getName(), String::compareToIgnoreCase).result();
+        return ComparisonChain.start().compareTrueFirst(playerListEntry.getGameMode() != GameMode.SPECTATOR, playerListEntry2.getGameMode() != GameMode.SPECTATOR).compare(team != null ? team.getName() : "", team2 != null ? team2.getName() : "").compare(playerListEntry.getProfile().name(), playerListEntry2.getProfile().name(), String::compareToIgnoreCase).result();
     });
 }
