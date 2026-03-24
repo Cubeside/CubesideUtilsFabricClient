@@ -3,7 +3,6 @@ package de.iani.cubesideutils.fabric;
 import de.iani.cubesideutils.fabric.packets.RankDataChannelHandler;
 import de.iani.cubesideutils.fabric.permission.PermissionHandler;
 import de.iani.cubesideutils.fabric.scheduler.Helper;
-import java.sql.SQLException;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -18,13 +17,8 @@ public class CubesideUtilsFabricClientMod implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 
     public CubesideUtilsFabricClientMod() {
-        LOGGER.info("Registering MySQL driver");
-        try {
-            new com.mysql.cj.jdbc.Driver();
-        } catch (SQLException e) {
-            LOGGER.warn("Could not register MySql driver", e);
-            e.printStackTrace();
-        }
+        LOGGER.info("Registering MariaDB driver");
+        new org.mariadb.jdbc.Driver();
     }
 
     @Override

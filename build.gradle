@@ -36,7 +36,7 @@ dependencies {
 
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 	api 'de.iani.cubeside:CubesideUtilsCore:1.16-SNAPSHOT'
-	implementation 'com.mysql:mysql-connector-j:8.0.33'
+	implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.7'
 }
 
 processResources {
@@ -81,11 +81,11 @@ shadowJar {
 
     dependencies {
         include(dependency('de.iani.cubeside:CubesideUtilsCore'))
-        include(dependency('com.mysql:mysql-connector-j'))
+        include(dependency('org.mariadb.jdbc:mariadb-java-client'))
         exclude "META-INF/services/java.sql.Driver"
     }
     
-    relocate 'com.mysql', 'de.iani.cubesideutils.fabric.libs.mysql'
+    relocate 'org.mariadb.jdbc', 'de.iani.cubesideutils.fabric.libs.mariadb'
 }
 
 // configure the maven publication
