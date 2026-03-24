@@ -4,22 +4,22 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 
 public class StringUtilFabric {
     public static final char COLOR_CHAR = '§';
     private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
 
-    public static Text parseLegacyColoredString(String text) {
+    public static Component parseLegacyColoredString(String text) {
         return parseLegacyColoredString(text, false);
     }
 
-    public static Text parseLegacyColoredString(String text, boolean parseUrls) {
-        ArrayList<MutableText> components = new ArrayList<>();
+    public static Component parseLegacyColoredString(String text, boolean parseUrls) {
+        ArrayList<MutableComponent> components = new ArrayList<>();
         Style style = Style.EMPTY;
         Style newStyle = style;
         StringBuilder builder = new StringBuilder();
@@ -31,7 +31,7 @@ public class StringUtilFabric {
             if (current == COLOR_CHAR) {
                 if (i < len) {
                     char formatting = text.charAt(i + 1);
-                    Formatting chatFormatting = Formatting.byCode(formatting);
+                    ChatFormatting chatFormatting = ChatFormatting.getByCode(formatting);
                     formatingSection: if (formatting == 'x') {
                         // rgb colors
                         if (len > i + 13) {
@@ -54,13 +54,13 @@ public class StringUtilFabric {
                             i += 13;
                         }
                     } else if (chatFormatting != null) {
-                        newStyle = style.withFormatting(chatFormatting);
+                        newStyle = style.applyFormat(chatFormatting);
                         i++;
                     }
                 }
                 if (!newStyle.equals(style)) {
                     if (!builder.isEmpty()) {
-                        components.add(Text.literal(builder.toString()).setStyle(style));
+                        components.add(Component.literal(builder.toString()).setStyle(style));
                         builder.delete(0, builder.length());
                     }
                     style = newStyle;
@@ -74,12 +74,12 @@ public class StringUtilFabric {
                     }
                     if (urlMatcher.region(i, nextSpace).find()) {
                         if (!builder.isEmpty()) {
-                            components.add(Text.literal(builder.toString()).setStyle(style));
+                            components.add(Component.literal(builder.toString()).setStyle(style));
                             builder.delete(0, builder.length());
                         }
                         String url = text.substring(i, nextSpace);
                         ClickEvent clickEvent = new ClickEvent.OpenUrl(url.startsWith("http") ? URI.create(url) : URI.create("http://" + url));
-                        components.add(Text.literal(url).setStyle(style.withClickEvent(clickEvent)));
+                        components.add(Component.literal(url).setStyle(style.withClickEvent(clickEvent)));
                         i = nextSpace - 1;
                         continue;
                     }
@@ -89,20 +89,20 @@ public class StringUtilFabric {
             }
         }
         if (!builder.isEmpty()) {
-            components.add(Text.literal(builder.toString()).setStyle(style));
+            components.add(Component.literal(builder.toString()).setStyle(style));
         }
         if (components.isEmpty()) {
-            return Text.literal("");
+            return Component.literal("");
         } else if (components.size() == 1) {
             return components.get(0);
         } else if (components.get(0).getStyle().equals(Style.EMPTY)) {
-            MutableText parent = components.get(0);
+            MutableComponent parent = components.get(0);
             for (int i = 1; i < components.size(); i++) {
                 parent.append(components.get(i));
             }
             return parent;
         } else {
-            MutableText parent = Text.literal("");
+            MutableComponent parent = Component.literal("");
             for (int i = 0; i < components.size(); i++) {
                 parent.append(components.get(i));
             }

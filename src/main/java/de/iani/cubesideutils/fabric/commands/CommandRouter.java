@@ -10,7 +10,7 @@ import de.iani.cubesideutils.fabric.commands.exceptions.IllegalSyntaxException;
 import de.iani.cubesideutils.fabric.commands.exceptions.InternalCommandException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionException;
 import de.iani.cubesideutils.fabric.commands.exceptions.NoPermissionForPathException;
-
+import de.iani.cubesideutils.fabric.permission.PermissionHandler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,14 +18,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-
-import de.iani.cubesideutils.fabric.permission.PermissionHandler;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.text.Text;
-import net.minecraft.world.GameMode;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.scores.PlayerTeam;
 
 public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClientCommandSource> implements CommandHandler {
 
@@ -94,9 +93,9 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
         }
         if (options == null) {
             options = new ArrayList<>();
-            ClientPlayNetworkHandler clientPlayNetworkHandler = sender.getClient().getNetworkHandler();
-            List<PlayerListEntry> list = ENTRY_ORDERING.sortedCopy(clientPlayNetworkHandler.getListedPlayerListEntries());
-            for (PlayerListEntry playerListEntry : list) {
+            ClientPacketListener clientPlayNetworkHandler = sender.getClient().getConnection();
+            List<PlayerInfo> list = ENTRY_ORDERING.sortedCopy(clientPlayNetworkHandler.getListedOnlinePlayers());
+            for (PlayerInfo playerListEntry : list) {
                 options.add(playerListEntry.getProfile().name());
             }
         }
@@ -173,11 +172,11 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
                 if (subcmd.executor == null) {
                     // hat weitere subcommands
                     if (isAnySubCommandDisplayable(sender, subcmd)) {
-                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " ..."), false);
+                        Minecraft.getInstance().getChatListener().handleSystemMessage(Component.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " ..."), false);
                     }
                 } else {
                     if (subcmd.executor.hasRequiredPermission(sender) && subcmd.executor.isAvailable(sender)) {
-                        sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " " + subcmd.executor.getUsage(sender)), false);
+                        Minecraft.getInstance().getChatListener().handleSystemMessage(Component.literal(exceptionHandler.getHelpMessagePrefix() + prefix + key + " " + subcmd.executor.getUsage(sender)), false);
                     }
                 }
             }
@@ -186,7 +185,7 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
             SubCommand executor = currentMap.executor;
             if (executor.hasRequiredPermission(sender) && executor.isAvailable(sender)) {
                 String prefix = getCommandString(alias, currentMap);
-                sender.getPlayer().sendMessage(Text.literal(exceptionHandler.getHelpMessagePrefix() + prefix + executor.getUsage(sender)), false);
+                Minecraft.getInstance().getChatListener().handleSystemMessage(Component.literal(exceptionHandler.getHelpMessagePrefix() + prefix + executor.getUsage(sender)), false);
             }
         }
     }
@@ -246,9 +245,10 @@ public class CommandRouter extends AbstractCommandRouter<SubCommand, FabricClien
         return isAnySubCommandExecutable(sender, currentMap);
     }
 
-    private static final Ordering<PlayerListEntry> ENTRY_ORDERING = Ordering.from((playerListEntry, playerListEntry2) -> {
-        Team team = playerListEntry.getScoreboardTeam();
-        Team team2 = playerListEntry2.getScoreboardTeam();
-        return ComparisonChain.start().compareTrueFirst(playerListEntry.getGameMode() != GameMode.SPECTATOR, playerListEntry2.getGameMode() != GameMode.SPECTATOR).compare(team != null ? team.getName() : "", team2 != null ? team2.getName() : "").compare(playerListEntry.getProfile().name(), playerListEntry2.getProfile().name(), String::compareToIgnoreCase).result();
+    private static final Ordering<PlayerInfo> ENTRY_ORDERING = Ordering.from((playerListEntry, playerListEntry2) -> {
+        PlayerTeam team = playerListEntry.getTeam();
+        PlayerTeam team2 = playerListEntry2.getTeam();
+        return ComparisonChain.start().compareTrueFirst(playerListEntry.getGameMode() != GameType.SPECTATOR, playerListEntry2.getGameMode() != GameType.SPECTATOR).compare(team != null ? team.getName() : "", team2 != null ? team2.getName() : "")
+                .compare(playerListEntry.getProfile().name(), playerListEntry2.getProfile().name(), String::compareToIgnoreCase).result();
     });
 }

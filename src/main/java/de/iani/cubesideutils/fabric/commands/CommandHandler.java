@@ -3,7 +3,6 @@ package de.iani.cubesideutils.fabric.commands;
 import java.util.List;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.ClientCommandSource;
 
 public interface CommandHandler {
     public boolean checkPermission(FabricClientCommandSource source);

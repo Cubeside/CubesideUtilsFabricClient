@@ -11,10 +11,10 @@ import de.iani.cubesideutils.fabric.profilefetcher.ProfileFetcher;
 import de.iani.cubesideutils.fabric.profilefetcher.ProfileProperty;
 import java.util.Optional;
 import java.util.UUID;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 public class CustomHeadUtil {
     public static ItemStack getPlayerHead(UUID uuid) {
@@ -45,7 +45,7 @@ public class CustomHeadUtil {
 
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
         GameProfile profile = new GameProfile(uuid, profileProperty.getName(), propertyMap);
-        playerHead.set(DataComponentTypes.PROFILE, ProfileComponent.ofStatic(profile));
+        playerHead.set(DataComponents.PROFILE, ResolvableProfile.createResolved(profile));
         return playerHead;
     }
 }

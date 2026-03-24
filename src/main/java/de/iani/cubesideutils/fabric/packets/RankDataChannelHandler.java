@@ -5,11 +5,11 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworkin
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
-public class RankDataChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<RankInfoS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<RankInfoS2C>  {
+public class RankDataChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<RankInfoS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<RankInfoS2C> {
 
     public RankDataChannelHandler() {
-        PayloadTypeRegistry.playS2C().register(RankInfoS2C.PACKET_ID, RankInfoS2C.PACKET_CODEC);
-        PayloadTypeRegistry.configurationS2C().register(RankInfoS2C.PACKET_ID, RankInfoS2C.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(RankInfoS2C.PACKET_ID, RankInfoS2C.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(RankInfoS2C.PACKET_ID, RankInfoS2C.PACKET_CODEC);
 
         ClientPlayNetworking.registerGlobalReceiver(RankInfoS2C.PACKET_ID, this);
         ClientConfigurationNetworking.registerGlobalReceiver(RankInfoS2C.PACKET_ID, this);

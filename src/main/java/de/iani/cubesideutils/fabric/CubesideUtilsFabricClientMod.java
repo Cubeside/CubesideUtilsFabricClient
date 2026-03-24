@@ -1,20 +1,16 @@
 package de.iani.cubesideutils.fabric;
 
-import de.iani.cubesideutils.fabric.commands.CommandRouter;
-import de.iani.cubesideutils.fabric.commands.CommandUtil;
 import de.iani.cubesideutils.fabric.packets.RankDataChannelHandler;
 import de.iani.cubesideutils.fabric.permission.PermissionHandler;
 import de.iani.cubesideutils.fabric.scheduler.Helper;
+import java.sql.SQLException;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.SQLException;
 
 public class CubesideUtilsFabricClientMod implements ClientModInitializer {
     public static final String MODID = "cubesideutilsfabricclient";
@@ -38,13 +34,14 @@ public class CubesideUtilsFabricClientMod implements ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STARTED.register(this::onClientStarting);
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> PermissionHandler.setRank(null));
+        ClientPlayConnectionEvents.DISCONNECT.register((_, _) -> PermissionHandler.setRank(null));
     }
-    public void onClientStarting(MinecraftClient client) {
+
+    public void onClientStarting(Minecraft client) {
         Helper.initialize(client);
     }
 
-    public void onClientTick(MinecraftClient client) {
+    public void onClientTick(Minecraft client) {
         Helper.processOnTick(this);
     }
 }
